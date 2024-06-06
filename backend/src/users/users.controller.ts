@@ -1,7 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpException,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginUserDto } from './dto/auth.dto';
+import { LocalAuthGuard } from './guards/local.guards';
 
 @Controller('users')
 export class UsersController {
@@ -10,6 +23,14 @@ export class UsersController {
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
+  }
+
+  @Post('login')
+  @UseGuards(LocalAuthGuard)
+  async login(@Request() req: Request, @Body() loginUser: LoginUserDto) {
+    const user = await this.usersService.validateUser(loginUser);
+
+    return user;
   }
 
   @Get()
