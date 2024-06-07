@@ -21,5 +21,6 @@ dotenv.config();
     }),
     PassportModule,
   ],
+  exports: [UsersService],
 })
 export class UsersModule {}

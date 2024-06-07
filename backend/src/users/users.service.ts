@@ -1,12 +1,12 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LoginUserDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { UserResponseType } from './types/userResponse.type';
 
 @Injectable()
 export class UsersService {
@@ -38,25 +38,22 @@ export class UsersService {
       throw new HttpException('Invalid credentials', 401);
     }
 
-    const payload = { email: user.email, sub: user._id };
+    return user;
+  }
+
+  buildUserResponse(user: User): UserResponseType {
     return {
-      access_token: this.jwtService.sign(payload),
+      name: user.name,
+      email: user.email,
+      access_token: this.generateToken(user),
     };
   }
 
-  findAll() {
-    return this.userModel.find().exec();
+  generateToken(user: User): string {
+    return this.jwtService.sign({ email: user.email });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async getUser(email: string) {
+    return this.userModel.findOne({ email });
   }
 }
