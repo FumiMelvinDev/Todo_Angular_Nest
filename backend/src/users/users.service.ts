@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
@@ -14,14 +14,16 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    const createUser = new this.userModel({
-      name: 'Fumi Melvin',
-      email: 'test@test',
-      password: 'Test@test',
-    });
+  async create(createUserDto: CreateUserDto) {
+    const user = await this.userModel.findOne({ email: createUserDto.email });
 
-    return createUser.save();
+    if (user) {
+      throw new HttpException('User already exists', 409);
+    }
+
+    const createdUser = new this.userModel(createUserDto);
+
+    return createdUser.save();
   }
 
   async validateUser({ email, password }: LoginUserDto) {
