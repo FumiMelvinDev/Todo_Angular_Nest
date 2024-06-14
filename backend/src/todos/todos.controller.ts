@@ -6,17 +6,20 @@ import {
   Patch,
   Param,
   Delete,
+  HttpException,
 } from '@nestjs/common';
 import { TodosService } from './todos.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import mongoose from 'mongoose';
 
 @Controller('todos')
 export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
   @Post()
-  create(@Body() createTodoDto: CreateTodoDto) {
+  createTodo(@Body() createTodoDto: CreateTodoDto) {
+    console.log(createTodoDto);
     return this.todosService.create(createTodoDto);
   }
 
@@ -26,8 +29,16 @@ export class TodosController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.todosService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const isValid = mongoose.Types.ObjectId.isValid(id);
+
+    if (!isValid) throw new HttpException('Not Found', 404);
+
+    const getTodo = await this.todosService.findOne(id);
+
+    if (!getTodo) throw new HttpException('Not Found', 404);
+
+    return getTodo;
   }
 
   @Patch(':id')
