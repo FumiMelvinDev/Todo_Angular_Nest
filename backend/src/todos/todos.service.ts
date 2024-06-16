@@ -23,10 +23,10 @@ export class TodosService {
   }
 
   update(id: string, updateTodoDto: UpdateTodoDto) {
-    return `This action updates a #${id} todo`;
+    return this.todoModel.findByIdAndUpdate(id, updateTodoDto, { new: true });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} todo`;
+  remove(id: string) {
+    return this.todoModel.findByIdAndDelete(id);
   }
 }
